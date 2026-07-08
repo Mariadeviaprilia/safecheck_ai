@@ -57,7 +57,7 @@ st.markdown("""
         background: #2E1065;
         border: 1px solid rgba(124,58,237,0.4);
         border-radius: 10px; padding: 1rem; margin-top: 0.5rem;
-        font-size: 0.85rem; color: #C4B5FD;
+        font-size: 0.85rem; color: #FFFFFF;
     }
     .stTextInput > div > div > input {
         background: rgba(255,255,255,0.95) !important;
@@ -585,7 +585,7 @@ def halaman_app():
                                 if r["label"] != "aman" else "🟢 AMAN"
                             st.markdown(f"""
                             <div style="margin:0.3rem 0;
-                            color:#C4B5FD !important;">
+                            color:#FFFFFF !important;">
                             {badge} — <i>"{r['contoh']}"</i></div>
                             """, unsafe_allow_html=True)
                         st.markdown("</div>", unsafe_allow_html=True)
