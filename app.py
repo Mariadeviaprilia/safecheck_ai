@@ -96,10 +96,30 @@ st.markdown("""
     }
     
     .stTextInput > div > div > input {
-        background: rgba(255,255,255,0.08) !important;
-        border: 1px solid rgba(255,255,255,0.2) !important;
+        background: rgba(255,255,255,0.95) !important;
+        border: 1px solid rgba(37,99,235,0.5) !important;
         border-radius: 8px !important;
-        color: white !important;
+        color: #0F172A !important;
+    }
+    
+    .stTextInput > div > div > input::placeholder {
+        color: #94A3B8 !important;
+    }
+    
+    .stTextInput > div > div > input:focus {
+        border: 1px solid #2563EB !important;
+        box-shadow: 0 0 0 3px rgba(37,99,235,0.2) !important;
+    }
+    
+    .stTextArea > div > div > textarea {
+        background: rgba(255,255,255,0.95) !important;
+        border: 1px solid rgba(37,99,235,0.5) !important;
+        border-radius: 8px !important;
+        color: #0F172A !important;
+    }
+    
+    .stTextArea > div > div > textarea::placeholder {
+        color: #94A3B8 !important;
     }
     
     .stTextArea > div > div > textarea {
@@ -276,23 +296,23 @@ def halaman_login():
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         st.markdown('<div class="auth-card">', unsafe_allow_html=True)
-        st.markdown("### 🔐 Masuk ke Akun")
+        st.markdown("### Masuk ke Akun")
         
         username = st.text_input("Username", placeholder="Masukkan username")
         password = st.text_input("Password", type="password", placeholder="Masukkan password")
         
         col_a, col_b = st.columns(2)
         with col_a:
-            if st.button("🚀 Login", use_container_width=True):
+            if st.button("Login", use_container_width=True):
                 if login_user(username, password):
                     st.session_state.logged_in = True
                     st.session_state.current_user = username
                     st.session_state.page = "app"
                     st.rerun()
                 else:
-                    st.error("❌ Username atau password salah!")
+                    st.error("Username atau password salah!")
         with col_b:
-            if st.button("📝 Daftar", use_container_width=True):
+            if st.button("Daftar", use_container_width=True):
                 st.session_state.page = "register"
                 st.rerun()
         
@@ -319,7 +339,7 @@ def halaman_register():
     col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
         st.markdown('<div class="auth-card">', unsafe_allow_html=True)
-        st.markdown("### 📝 Daftar Akun Baru")
+        st.markdown("### Daftar Akun Baru")
         
         nama = st.text_input("Nama Lengkap", placeholder="Contoh: Maria Devi")
         username = st.text_input("Username", placeholder="Buat username unik")
