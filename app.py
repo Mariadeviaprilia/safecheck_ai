@@ -51,7 +51,7 @@ st.markdown("""
         background: #0F2D5C;
         border: 1px solid rgba(37,99,235,0.4);
         border-radius: 10px; padding: 1rem; margin-top: 1rem;
-        font-size: 0.85rem; color: #93C5FD;
+        font-size: 0.85rem; color: #FFFFFF;
     }
     .ref-box {
         background: #2E1065;
@@ -541,7 +541,7 @@ def halaman_app():
                             <div style="background:#1E293B;
                             border-left:4px solid #DC2626;padding:0.5rem 1rem;
                             border-radius:6px;margin:0.3rem 0;
-                            color:#FCA5A5 !important;">
+                            color:#FFFFFF !important;">
                             <b>{i}.</b> {item}</div>
                             """, unsafe_allow_html=True)
 
@@ -550,7 +550,7 @@ def halaman_app():
                     st.markdown(f"""
                     <div style="background:#1E293B;
                     border-left:4px solid #2563EB;border-radius:10px;
-                    padding:1rem;color:#BFDBFE !important;">
+                    padding:1rem;color:#FFFFFF !important;">
                     {hasil.get("penjelasan_awam","-")}</div>
                     """, unsafe_allow_html=True)
 
@@ -563,13 +563,13 @@ def halaman_app():
                                 st.markdown(f"""
                                 <div style="background:#1E293B;
                                 border-left:4px solid #DC2626;border-radius:8px;
-                                margin:0.3rem 0;color:#FCA5A5 !important;">
+                                margin:0.3rem 0;color:#FFFFFF !important;">
                                 ❌ {item}</div>""", unsafe_allow_html=True)
                             else:
                                 st.markdown(f"""
                                 <div style="background:#1E293B;
                                 border-left:4px solid #16A34A;border-radius:8px;
-                                margin:0.3rem 0;color:#86EFAC !important;">
+                                margin:0.3rem 0;color:#FFFFFF !important;">
                                 ✅ {item}</div>""", unsafe_allow_html=True)
 
                     # Referensi RAG
@@ -598,7 +598,7 @@ def halaman_app():
                             st.markdown("""
                             <div style="background:#1E293B;
                             border-left:4px solid #2563EB;border-radius:10px;padding:1rem;
-                            color:#BFDBFE !important;">
+                            color:#FFFFFF !important;">
                             🏦 <b>BRI:</b> 14017<br>
                             🏦 <b>BCA:</b> 1500888<br>
                             🏦 <b>Mandiri:</b> 14000<br>
@@ -608,7 +608,7 @@ def halaman_app():
                             st.markdown("""
                             <div style="background:#1E293B;
                             border-left:4px solid #2563EB;border-radius:10px;padding:1rem;
-                            color:#BFDBFE !important;">
+                            color:#FFFFFF !important;">
                             🌐 Kominfo: aduan.kominfo.go.id<br>
                             🌐 Lapor: lapor.go.id<br>
                             🚔 Polisi: 110<br>
