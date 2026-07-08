@@ -17,8 +17,9 @@ st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
     * { font-family: 'Inter', sans-serif; }
-    .stApp {
-        background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0F172A 100%);
+    .stApp, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+    [data-testid="stMainBlockContainer"] {
+        background: linear-gradient(135deg, #0F172A 0%, #1E3A5F 50%, #0F172A 100%) !important;
         min-height: 100vh;
     }
     .main-header {
@@ -36,24 +37,24 @@ st.markdown("""
         max-width: 450px; margin: 0 auto;
     }
     .stat-card {
-        background: rgba(255,255,255,0.05);
+        background: #1E293B !important;
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 12px; padding: 1.2rem;
         text-align: center; color: white;
     }
     .history-item {
-        background: rgba(255,255,255,0.04);
+        background: #1E293B !important;
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 10px; padding: 0.8rem 1rem; margin: 0.4rem 0;
     }
     .disclaimer-box {
-        background: rgba(37,99,235,0.15);
+        background: #0F2D5C;
         border: 1px solid rgba(37,99,235,0.4);
         border-radius: 10px; padding: 1rem; margin-top: 1rem;
         font-size: 0.85rem; color: #93C5FD;
     }
     .ref-box {
-        background: rgba(124,58,237,0.15);
+        background: #2E1065;
         border: 1px solid rgba(124,58,237,0.4);
         border-radius: 10px; padding: 1rem; margin-top: 0.5rem;
         font-size: 0.85rem; color: #C4B5FD;
@@ -83,14 +84,11 @@ st.markdown("""
         border-right: 1px solid rgba(255,255,255,0.1) !important;
     }
     div[data-testid="stSidebar"] * { color: #E2E8F0 !important; }
+    div[data-testid="stSidebar"] h1,
+    div[data-testid="stSidebar"] h2,
+    div[data-testid="stSidebar"] h3 { color: white !important; }
     section[data-testid="stSidebar"] {
         background: #0F172A !important;
-    }
-    .stat-card {
-        background: #1E293B !important;
-    }
-    .history-item {
-        background: #1E293B !important;
     }
     div[data-testid="stSidebar"] div[data-testid="stAlert"] {
         background: #1E293B !important;
@@ -100,9 +98,6 @@ st.markdown("""
         color: #FCD34D !important;
         font-weight: 600;
     }
-    div[data-testid="stSidebar"] h1,
-    div[data-testid="stSidebar"] h2,
-    div[data-testid="stSidebar"] h3 { color: white !important; }
     .sidebar-user {
         background: rgba(37,99,235,0.2);
         border: 1px solid rgba(37,99,235,0.4);
@@ -131,17 +126,17 @@ def setup_rag():
     try:
         df = pd.read_csv("dataset_scam.csv")
         client = chromadb.Client()
-        
+
         ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
             api_key=api_key,
             model_name="models/gemini-embedding-001"
         )
-        
+
         collection = client.get_or_create_collection(
             name="safecheck_db",
             embedding_function=ef
         )
-        
+
         if collection.count() == 0:
             docs = df["teks_pesan"].tolist()
             metas = [
@@ -150,7 +145,7 @@ def setup_rag():
             ]
             ids = [f"doc_{i}" for i in range(len(docs))]
             collection.add(documents=docs, metadatas=metas, ids=ids)
-        
+
         return collection, True
     except Exception as e:
         return None, False
@@ -205,7 +200,7 @@ def analisis_dengan_rag(pesan_user):
     # Ambil referensi dari ChromaDB
     referensi_konteks = ""
     sumber_referensi = []
-    
+
     if rag_ready and collection:
         try:
             results = collection.query(
@@ -214,7 +209,7 @@ def analisis_dengan_rag(pesan_user):
             )
             docs = results["documents"][0]
             metas = results["metadatas"][0]
-            
+
             referensi_konteks = "\n\nREFERENSI DARI DATABASE ANCAMAN:\n"
             for i, (doc, meta) in enumerate(zip(docs, metas), 1):
                 referensi_konteks += f"{i}. Contoh: '{doc}'\n"
@@ -257,7 +252,7 @@ Jawab HANYA dalam format JSON ini tanpa teks lain:
         teks = teks.split("```")[1]
         if teks.startswith("json"):
             teks = teks[4:]
-    
+
     hasil = json.loads(teks.strip())
     hasil["_sumber_referensi"] = sumber_referensi
     return hasil
@@ -390,7 +385,7 @@ def halaman_app():
             </div>""", unsafe_allow_html=True)
 
         st.markdown("---")
-        st.markdown("#### 🕒 Riwayat")
+        st.markdown("#### Riwayat")
         if history:
             for h in history[:5]:
                 e = "🔴" if h["status"]=="Berisiko Tinggi" \
@@ -411,7 +406,7 @@ def halaman_app():
             """, unsafe_allow_html=True)
 
         st.markdown("---")
-        if st.button("🚪 Logout", use_container_width=True):
+        if st.button("Logout", use_container_width=True):
             st.session_state.logged_in = False
             st.session_state.current_user = None
             st.session_state.page = "login"
@@ -442,7 +437,7 @@ def halaman_app():
         key="input_pesan"
     )
 
-    with st.expander("💡 Coba contoh pesan"):
+    with st.expander("Coba contoh pesan"):
         c1, c2, c3 = st.columns(3)
         with c1:
             if st.button("🔴 Scam BRI", use_container_width=True):
@@ -473,7 +468,7 @@ def halaman_app():
 
     c1, c2, c3 = st.columns([1,2,1])
     with c2:
-        tombol = st.button("🔍 Analisis Sekarang",
+        tombol = st.button("Analisis Sekarang",
                            type="primary", use_container_width=True)
 
     if tombol:
@@ -496,7 +491,7 @@ def halaman_app():
                     refs = hasil.get("_sumber_referensi", [])
 
                     st.markdown("---")
-                    st.markdown("### 📊 Hasil Analisis")
+                    st.markdown("### Hasil Analisis")
 
                     if status == "Berisiko Tinggi":
                         e, w = "🔴", "#F87171"
@@ -538,10 +533,10 @@ def halaman_app():
                     # Indikator
                     indikator = hasil.get("indikator_bahaya", [])
                     if indikator:
-                        st.markdown("#### ⚠️ Indikator Bahaya")
+                        st.markdown("#### Indikator Bahaya")
                         for i, item in enumerate(indikator, 1):
                             st.markdown(f"""
-                            <div style="background:rgba(220,38,38,0.1);
+                            <div style="background:#3B1010;
                             border-left:3px solid #DC2626;padding:0.5rem 1rem;
                             border-radius:6px;margin:0.3rem 0;
                             color:#FCA5A5 !important;">
@@ -549,10 +544,10 @@ def halaman_app():
                             """, unsafe_allow_html=True)
 
                     # Penjelasan
-                    st.markdown("#### 💬 Penjelasan")
+                    st.markdown("#### Penjelasan")
                     st.markdown(f"""
-                    <div style="background:rgba(37,99,235,0.15);
-                    border:1px solid rgba(37,99,235,0.3);border-radius:10px;
+                    <div style="background:#0F2D5C;
+                    border:1px solid rgba(37,99,235,0.4);border-radius:10px;
                     padding:1rem;color:#BFDBFE !important;">
                     {hasil.get("penjelasan_awam","-")}</div>
                     """, unsafe_allow_html=True)
@@ -560,24 +555,24 @@ def halaman_app():
                     # Rekomendasi
                     rekom = hasil.get("rekomendasi_tindakan", [])
                     if rekom:
-                        st.markdown("#### 📋 Rekomendasi Tindakan")
+                        st.markdown("#### Rekomendasi Tindakan")
                         for item in rekom:
                             if "jangan" in item.lower():
                                 st.markdown(f"""
-                                <div style="background:rgba(220,38,38,0.1);
+                                <div style="background:#3B1010;
                                 border-radius:8px;padding:0.5rem 1rem;
                                 margin:0.3rem 0;color:#FCA5A5 !important;">
                                 ❌ {item}</div>""", unsafe_allow_html=True)
                             else:
                                 st.markdown(f"""
-                                <div style="background:rgba(22,163,74,0.1);
+                                <div style="background:#0F3A20;
                                 border-radius:8px;padding:0.5rem 1rem;
                                 margin:0.3rem 0;color:#86EFAC !important;">
                                 ✅ {item}</div>""", unsafe_allow_html=True)
 
                     # Referensi RAG
                     if refs:
-                        st.markdown("#### 🗄️ Referensi dari Database Ancaman")
+                        st.markdown("#### Referensi dari Database Ancaman")
                         st.markdown("""
                         <div class="ref-box">
                         <b>SafeCheck AI mencocokkan pesan ini dengan 
@@ -599,7 +594,7 @@ def halaman_app():
                         ca, cb = st.columns(2)
                         with ca:
                             st.markdown("""
-                            <div style="background:rgba(37,99,235,0.15);
+                            <div style="background:#0F2D5C;
                             border-radius:10px;padding:1rem;
                             color:#BFDBFE !important;">
                             🏦 <b>BRI:</b> 14017<br>
@@ -609,7 +604,7 @@ def halaman_app():
                             </div>""", unsafe_allow_html=True)
                         with cb:
                             st.markdown("""
-                            <div style="background:rgba(37,99,235,0.15);
+                            <div style="background:#0F2D5C;
                             border-radius:10px;padding:1rem;
                             color:#BFDBFE !important;">
                             🌐 Kominfo: aduan.kominfo.go.id<br>
