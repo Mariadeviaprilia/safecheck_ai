@@ -146,9 +146,10 @@ def setup_rag():
             ids = [f"doc_{i}" for i in range(len(docs))]
             collection.add(documents=docs, metadatas=metas, ids=ids)
 
-        except Exception as e:
-            st.error(f"RAG gagal: {e}")
-            return None, False
+        return collection, True
+    except Exception as e:
+        st.error(f"RAG gagal: {e}")
+        return None, False
 
 with st.spinner("🔄 Memuat database ancaman..."):
     collection, rag_ready = setup_rag()
