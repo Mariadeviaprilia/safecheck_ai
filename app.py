@@ -161,8 +161,15 @@ st.markdown("""
     }
     
     h1, h2, h3, h4, h5 { color: white !important; }
-    p, li { color: #CBD5E1 !important; }
-    label { color: #94A3B8 !important; }
+    p, li, span, div { color: #CBD5E1 !important; }
+    label { color: #E2E8F0 !important; }
+
+    [data-testid="stSidebar"] * { color: #E2E8F0 !important; }
+    [data-testid="stSidebar"] h1,
+    [data-testid="stSidebar"] h2,
+    [data-testid="stSidebar"] h3 { color: white !important; }
+    [data-testid="stSidebar"] p,
+    [data-testid="stSidebar"] span { color: #CBD5E1 !important; }
     
     .history-item {
         background: rgba(255,255,255,0.04);
