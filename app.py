@@ -146,9 +146,9 @@ def setup_rag():
             ids = [f"doc_{i}" for i in range(len(docs))]
             collection.add(documents=docs, metadatas=metas, ids=ids)
 
-        return collection, True
-    except Exception as e:
-        return None, False
+        except Exception as e:
+            st.error(f"RAG gagal: {e}")
+            return None, False
 
 with st.spinner("🔄 Memuat database ancaman..."):
     collection, rag_ready = setup_rag()
@@ -504,8 +504,8 @@ def halaman_app():
                     with c1:
                         st.markdown(f"""
                         <div class="stat-card">
-                            <div style="font-size:2rem;">{e}</div>
-                            <div style="font-size:0.95rem;font-weight:700;
+                            <div style="font-size:1.8rem;">{e}</div>
+                            <div style="font-size:1rem;font-weight:700;
                             color:{w} !important;">{status}</div>
                             <div style="font-size:0.7rem;
                             color:#94A3B8 !important;">Status</div>
@@ -513,16 +513,17 @@ def halaman_app():
                     with c2:
                         st.markdown(f"""
                         <div class="stat-card">
-                            <div style="font-size:2rem;font-weight:700;
-                            color:{w} !important;">{skor}</div>
+                            <div style="font-size:1.8rem;">📊</div>
+                            <div style="font-size:1rem;font-weight:700;
+                            color:{w} !important;">{skor}/100</div>
                             <div style="font-size:0.7rem;
-                            color:#94A3B8 !important;">Skor Risiko /100</div>
+                            color:#94A3B8 !important;">Skor Risiko</div>
                         </div>""", unsafe_allow_html=True)
                     with c3:
                         st.markdown(f"""
                         <div class="stat-card">
-                            <div style="font-size:1.5rem;">🎯</div>
-                            <div style="font-size:0.95rem;font-weight:700;
+                            <div style="font-size:1.8rem;">🎯</div>
+                            <div style="font-size:1rem;font-weight:700;
                             color:#60A5FA !important;">{conf}</div>
                             <div style="font-size:0.7rem;
                             color:#94A3B8 !important;">Keyakinan AI</div>
@@ -536,8 +537,8 @@ def halaman_app():
                         st.markdown("#### Indikator Bahaya")
                         for i, item in enumerate(indikator, 1):
                             st.markdown(f"""
-                            <div style="background:#3B1010;
-                            border-left:3px solid #DC2626;padding:0.5rem 1rem;
+                            <div style="background:#1E293B;
+                            border-left:4px solid #DC2626;padding:0.5rem 1rem;
                             border-radius:6px;margin:0.3rem 0;
                             color:#FCA5A5 !important;">
                             <b>{i}.</b> {item}</div>
@@ -546,8 +547,8 @@ def halaman_app():
                     # Penjelasan
                     st.markdown("#### Penjelasan")
                     st.markdown(f"""
-                    <div style="background:#0F2D5C;
-                    border:1px solid rgba(37,99,235,0.4);border-radius:10px;
+                    <div style="background:#1E293B;
+                    border-left:4px solid #2563EB;border-radius:10px;
                     padding:1rem;color:#BFDBFE !important;">
                     {hasil.get("penjelasan_awam","-")}</div>
                     """, unsafe_allow_html=True)
@@ -559,14 +560,14 @@ def halaman_app():
                         for item in rekom:
                             if "jangan" in item.lower():
                                 st.markdown(f"""
-                                <div style="background:#3B1010;
-                                border-radius:8px;padding:0.5rem 1rem;
+                                <div style="background:#1E293B;
+                                border-left:4px solid #DC2626;border-radius:8px;
                                 margin:0.3rem 0;color:#FCA5A5 !important;">
                                 ❌ {item}</div>""", unsafe_allow_html=True)
                             else:
                                 st.markdown(f"""
-                                <div style="background:#0F3A20;
-                                border-radius:8px;padding:0.5rem 1rem;
+                                <div style="background:#1E293B;
+                                border-left:4px solid #16A34A;border-radius:8px;
                                 margin:0.3rem 0;color:#86EFAC !important;">
                                 ✅ {item}</div>""", unsafe_allow_html=True)
 
@@ -594,8 +595,8 @@ def halaman_app():
                         ca, cb = st.columns(2)
                         with ca:
                             st.markdown("""
-                            <div style="background:#0F2D5C;
-                            border-radius:10px;padding:1rem;
+                            <div style="background:#1E293B;
+                            border-left:4px solid #2563EB;border-radius:10px;padding:1rem;
                             color:#BFDBFE !important;">
                             🏦 <b>BRI:</b> 14017<br>
                             🏦 <b>BCA:</b> 1500888<br>
@@ -604,8 +605,8 @@ def halaman_app():
                             </div>""", unsafe_allow_html=True)
                         with cb:
                             st.markdown("""
-                            <div style="background:#0F2D5C;
-                            border-radius:10px;padding:1rem;
+                            <div style="background:#1E293B;
+                            border-left:4px solid #2563EB;border-radius:10px;padding:1rem;
                             color:#BFDBFE !important;">
                             🌐 Kominfo: aduan.kominfo.go.id<br>
                             🌐 Lapor: lapor.go.id<br>
