@@ -83,6 +83,23 @@ st.markdown("""
         border-right: 1px solid rgba(255,255,255,0.1) !important;
     }
     div[data-testid="stSidebar"] * { color: #E2E8F0 !important; }
+    section[data-testid="stSidebar"] {
+        background: #0F172A !important;
+    }
+    .stat-card {
+        background: #1E293B !important;
+    }
+    .history-item {
+        background: #1E293B !important;
+    }
+    div[data-testid="stSidebar"] div[data-testid="stAlert"] {
+        background: #1E293B !important;
+        border: 1px solid rgba(255,255,255,0.15) !important;
+    }
+    div[data-testid="stSidebar"] div[data-testid="stAlert"] p {
+        color: #FCD34D !important;
+        font-weight: 600;
+    }
     div[data-testid="stSidebar"] h1,
     div[data-testid="stSidebar"] h2,
     div[data-testid="stSidebar"] h3 { color: white !important; }
@@ -103,7 +120,7 @@ st.markdown("""
 try:
     api_key = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
-    llm = genai.GenerativeModel("gemini-1.5-flash-8b")
+    llm = genai.GenerativeModel("gemini-2.5-flash-lite")
 except Exception:
     st.error("❌ API Key tidak ditemukan.")
     st.stop()
@@ -117,7 +134,7 @@ def setup_rag():
         
         ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
             api_key=api_key,
-            model_name="models/embedding-001"
+            model_name="models/gemini-embedding-001"
         )
         
         collection = client.get_or_create_collection(
