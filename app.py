@@ -304,17 +304,6 @@ INSTRUKSI TAMBAHAN:
 - Jawab HANYA dalam format JSON, tanpa teks lain di luar JSON
 """
 
-Jawab HANYA dalam format JSON ini tanpa teks lain:
-{{
-    "status_risiko": "Berisiko Tinggi" atau "Perlu Waspada" atau "Aman",
-    "skor_risiko": angka 0-100,
-    "confidence_level": "Tinggi" atau "Sedang" atau "Rendah",
-    "indikator_bahaya": ["indikator spesifik 1", "indikator spesifik 2"],
-    "penjelasan_awam": "penjelasan 2-3 kalimat bahasa sederhana",
-    "rekomendasi_tindakan": ["tindakan 1", "tindakan 2", "tindakan 3"]
-}}
-"""
-
 # ── FUNGSI RAG + ANALISIS ──
 def analisis_dengan_rag(pesan_user):
     referensi_konteks = ""
