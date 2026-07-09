@@ -108,6 +108,12 @@ st.markdown("""
     p, li { color: #CBD5E1 !important; }
     label { color: #E2E8F0 !important; }
     .stSpinner { color: white !important; }
+    
+    [data-testid="stMarkdownContainer"] p,
+    [data-testid="stMarkdownContainer"] li,
+    [data-testid="stMarkdownContainer"] div {
+        color: #FFFFFF !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
