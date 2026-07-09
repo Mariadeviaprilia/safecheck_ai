@@ -491,8 +491,6 @@ def halaman_app():
         <h1 style="font-size:2rem;margin:0;">🛡️ SafeCheck AI</h1>
         <p style="opacity:0.9;margin:0.3rem 0 0;">
         Deteksi Penipuan Digital Sebelum Terlambat</p>
-        <small style="opacity:0.7;">
-        by Maria Devi Aparilia — Final Project AI01</small>
     </div>""", unsafe_allow_html=True)
 
     st.markdown(f"### 👋 Halo, {nama_user}!")
