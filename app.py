@@ -133,10 +133,16 @@ def setup_rag():
         df = pd.read_csv("dataset_scam.csv")
         client = chromadb.Client()
 
-        ef = embedding_functions.GoogleGenerativeAiEmbeddingFunction(
-            api_key=api_key,
-            model_name="models/gemini-embedding-001"
-        )
+        class CustomGeminiEF:
+            def __call__(self, input):
+                result = genai.embed_content(
+                    model="models/gemini-embedding-001",
+                    content=input,
+                    task_type="retrieval_document"
+                )
+                return result["embedding"] if isinstance(result["embedding"][0], list) else [result["embedding"]]
+
+        ef = CustomGeminiEF()
 
         collection = client.get_or_create_collection(
             name="safecheck_db",
