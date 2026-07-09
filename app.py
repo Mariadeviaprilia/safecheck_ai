@@ -370,7 +370,8 @@ def halaman_login():
         <h1 style="font-size:2.5rem;margin:0;">🛡️ SafeCheck AI</h1>
         <p style="opacity:0.9;margin:0.5rem 0 0;">
         Deteksi Penipuan Digital Sebelum Terlambat</p>
-    </div>""", unsafe_allow_html=True)
+    </div>""", 
+    unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1,1.5,1])
     with col2:
