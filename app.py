@@ -140,7 +140,22 @@ def setup_rag():
                     content=input,
                     task_type="retrieval_document"
                 )
-                return result["embedding"] if isinstance(result["embedding"][0], list) else [result["embedding"]]
+                embedding = result["embedding"]
+                return embedding if isinstance(embedding[0], list) else [embedding]
+
+            @staticmethod
+            def name():
+                return "custom_gemini_ef"
+
+            def get_config(self):
+                return {}
+
+            @staticmethod
+            def build_from_config(config):
+                return CustomGeminiEF()
+
+            def is_legacy(self):
+                return False
 
         ef = CustomGeminiEF()
 
