@@ -131,7 +131,7 @@ except Exception:
     st.error("❌ API Key tidak ditemukan.")
     st.stop()
 
-# ── CUSTOM EMBEDDING FUNCTION (Gemini langsung, hindari bug versi chromadb) ──
+# ── CUSTOM EMBEDDING FUNCTION ──
 class CustomGeminiEF:
     def __call__(self, input):
         result = genai.embed_content(
