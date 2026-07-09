@@ -3,6 +3,7 @@ import google.generativeai as genai
 import json
 import hashlib
 import time
+import logging
 import pandas as pd
 import chromadb
 from chromadb.utils import embedding_functions
@@ -12,6 +13,10 @@ st.set_page_config(
     page_icon="🛡️",
     layout="wide"
 )
+
+# ── LOGGING (Monitoring) ──
+logging.basicConfig(filename="safecheck_log.txt", level=logging.INFO,
+                     format="%(asctime)s - %(message)s")
 
 st.markdown("""
 <style>
@@ -108,7 +113,7 @@ st.markdown("""
     p, li { color: #CBD5E1 !important; }
     label { color: #E2E8F0 !important; }
     .stSpinner { color: white !important; }
-    
+
     [data-testid="stMarkdownContainer"] p,
     [data-testid="stMarkdownContainer"] li,
     [data-testid="stMarkdownContainer"] div {
@@ -126,36 +131,52 @@ except Exception:
     st.error("❌ API Key tidak ditemukan.")
     st.stop()
 
+# ── CUSTOM EMBEDDING FUNCTION (Gemini langsung, hindari bug versi chromadb) ──
+class CustomGeminiEF:
+    def __call__(self, input):
+        result = genai.embed_content(
+            model="models/gemini-embedding-001",
+            content=input,
+            task_type="retrieval_document"
+        )
+        embedding = result["embedding"]
+        return embedding if isinstance(embedding[0], list) else [embedding]
+
+    @staticmethod
+    def name():
+        return "custom_gemini_ef"
+
+    def get_config(self):
+        return {}
+
+    @staticmethod
+    def build_from_config(config):
+        return CustomGeminiEF()
+
+    def is_legacy(self):
+        return False
+
+# ── CHUNKING ──
+def chunk_text(text, chunk_size=100, overlap=20):
+    """Memecah teks jadi potongan kecil dengan overlap,
+    supaya konteks antar potongan tidak terputus."""
+    words = text.split()
+    if len(words) <= chunk_size:
+        return [text]
+    chunks = []
+    start = 0
+    while start < len(words):
+        end = start + chunk_size
+        chunks.append(" ".join(words[start:end]))
+        start += chunk_size - overlap
+    return chunks
+
 # ── SETUP CHROMADB + RAG ──
 @st.cache_resource
 def setup_rag():
     try:
         df = pd.read_csv("dataset_scam.csv")
         client = chromadb.Client()
-
-        class CustomGeminiEF:
-            def __call__(self, input):
-                result = genai.embed_content(
-                    model="models/gemini-embedding-001",
-                    content=input,
-                    task_type="retrieval_document"
-                )
-                embedding = result["embedding"]
-                return embedding if isinstance(embedding[0], list) else [embedding]
-
-            @staticmethod
-            def name():
-                return "custom_gemini_ef"
-
-            def get_config(self):
-                return {}
-
-            @staticmethod
-            def build_from_config(config):
-                return CustomGeminiEF()
-
-            def is_legacy(self):
-                return False
 
         ef = CustomGeminiEF()
 
@@ -165,12 +186,18 @@ def setup_rag():
         )
 
         if collection.count() == 0:
-            docs = df["teks_pesan"].tolist()
-            metas = [
-                {"label": row["label"], "penjelasan": row["penjelasan"]}
-                for _, row in df.iterrows()
-            ]
-            ids = [f"doc_{i}" for i in range(len(docs))]
+            docs, metas, ids = [], [], []
+            for i, row in df.iterrows():
+                potongan = chunk_text(row["teks_pesan"])
+                for j, chunk in enumerate(potongan):
+                    docs.append(chunk)
+                    metas.append({
+                        "label": row["label"],
+                        "penjelasan": row["penjelasan"],
+                        "chunk_index": j,
+                        "source_id": int(i)
+                    })
+                    ids.append(f"doc_{i}_chunk_{j}")
             collection.add(documents=docs, metadatas=metas, ids=ids)
 
         return collection, True
@@ -222,40 +249,24 @@ def save_history(u, pesan, hasil):
     if len(st.session_state.users_db[u]["history"]) > 10:
         st.session_state.users_db[u]["history"] = \
             st.session_state.users_db[u]["history"][:10]
+    logging.info(f"User={u} | Status={hasil.get('status_risiko')} | Skor={hasil.get('skor_risiko')}")
 
-# ── FUNGSI RAG + ANALISIS ──
-def analisis_dengan_rag(pesan_user):
-    # Ambil referensi dari ChromaDB
-    referensi_konteks = ""
-    sumber_referensi = []
+# ── COST CONTROL ──
+MAX_ANALISIS_PER_SESI = 5
 
-    if rag_ready and collection:
-        try:
-            results = collection.query(
-                query_texts=[pesan_user],
-                n_results=3
-            )
-            docs = results["documents"][0]
-            metas = results["metadatas"][0]
+def cek_limit_analisis():
+    if "jumlah_analisis" not in st.session_state:
+        st.session_state.jumlah_analisis = 0
+    return st.session_state.jumlah_analisis < MAX_ANALISIS_PER_SESI
 
-            referensi_konteks = "\n\nREFERENSI DARI DATABASE ANCAMAN:\n"
-            for i, (doc, meta) in enumerate(zip(docs, metas), 1):
-                referensi_konteks += f"{i}. Contoh: '{doc}'\n"
-                referensi_konteks += f"   Label: {meta['label']}\n"
-                referensi_konteks += f"   Indikator: {meta['penjelasan']}\n"
-                sumber_referensi.append({
-                    "contoh": doc[:60] + "...",
-                    "label": meta["label"]
-                })
-        except:
-            referensi_konteks = ""
-
-    prompt = f"""
+# ── PROMPT MANAGEMENT ──
+PROMPT_VERSION = "v1.2"
+PROMPT_TEMPLATE = """
 Kamu adalah Analis Keamanan Digital Senior spesialis mendeteksi penipuan digital di Indonesia.
 
 PESAN YANG DIANALISIS:
-"{pesan_user}"
-{referensi_konteks}
+"{pesan}"
+{referensi}
 
 INSTRUKSI:
 - Gunakan referensi di atas untuk mendeteksi pola yang mirip
@@ -274,6 +285,40 @@ Jawab HANYA dalam format JSON ini tanpa teks lain:
     "rekomendasi_tindakan": ["tindakan 1", "tindakan 2", "tindakan 3"]
 }}
 """
+
+# ── FUNGSI RAG + ANALISIS ──
+def analisis_dengan_rag(pesan_user):
+    referensi_konteks = ""
+    sumber_referensi = []
+
+    if rag_ready and collection:
+        try:
+            results = collection.query(
+                query_texts=[pesan_user],
+                n_results=3
+            )
+            docs = results["documents"][0]
+            metas = results["metadatas"][0]
+            distances = results["distances"][0]
+
+            filtered = [(d, m) for d, m, dist in zip(docs, metas, distances) if dist < 1.2]
+
+            if filtered:
+                referensi_konteks = "\n\nREFERENSI DARI DATABASE ANCAMAN:\n"
+                for i, (doc, meta) in enumerate(filtered, 1):
+                    referensi_konteks += f"{i}. Contoh: '{doc}'\n"
+                    referensi_konteks += f"   Label: {meta['label']}\n"
+                    referensi_konteks += f"   Indikator: {meta['penjelasan']}\n"
+                    sumber_referensi.append({
+                        "contoh": doc[:60] + "...",
+                        "label": meta["label"]
+                    })
+        except Exception as e:
+            print(f"Query RAG gagal: {e}")
+            referensi_konteks = ""
+
+    prompt = PROMPT_TEMPLATE.format(pesan=pesan_user, referensi=referensi_konteks)
+
     response = llm.generate_content(prompt)
     teks = response.text.strip()
     if "```" in teks:
@@ -503,7 +548,9 @@ def halaman_app():
         if "contoh" in st.session_state:
             pesan_input = st.session_state.contoh
 
-        if not pesan_input.strip():
+        if not cek_limit_analisis():
+            st.error(f"⚠️ Batas {MAX_ANALISIS_PER_SESI} analisis per sesi tercapai. Muat ulang halaman untuk mulai sesi baru (mencegah pemborosan kuota API).")
+        elif not pesan_input.strip():
             st.warning("⚠️ Masukkan pesan terlebih dahulu!")
         else:
             with st.spinner("🔍 SafeCheck AI menganalisis dengan RAG..."):
@@ -512,6 +559,7 @@ def halaman_app():
                     save_history(
                         st.session_state.current_user, pesan_input, hasil
                     )
+                    st.session_state.jumlah_analisis += 1
 
                     status = hasil.get("status_risiko", "Tidak diketahui")
                     skor = hasil.get("skor_risiko", 0)
@@ -659,10 +707,10 @@ def halaman_app():
                     st.error(f"❌ Error: {str(ex)}")
 
     st.markdown("---")
-    st.markdown("""
+    st.markdown(f"""
     <div style="text-align:center;color:#475569;font-size:0.8rem;">
         🛡️ SafeCheck AI · Maria Devi Aparilia · NIM 24110400032<br>
-        Final Project AI01 · Powered by Gemini AI + ChromaDB RAG
+        Final Project AI01 · Powered by Gemini AI + ChromaDB RAG · Prompt {PROMPT_VERSION}
     </div>""", unsafe_allow_html=True)
 
 # ── ROUTING ──
