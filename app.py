@@ -178,9 +178,6 @@ def setup_rag():
         st.error(f"RAG gagal: {e}")
         return None, False
 
-st.write("📂 File yang terbaca:", __import__("os").listdir())
-with st.spinner("🔄 Memuat database ancaman..."):
-    collection, rag_ready = setup_rag()
 with st.spinner("🔄 Memuat database ancaman..."):
     collection, rag_ready = setup_rag()
 
